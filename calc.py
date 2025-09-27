@@ -55,23 +55,47 @@ def perform_calc(combo, debug=False):
     additive_func = None
     prev_additive = False
     additive_value = 0
-    for upgrade in combo:
-        u_type = upgrade.split('.')
-        if upgrades['types'][u_type[0]]['method'] == 'additive':
-            additive_value += upgrades['types'][u_type[0]]['upgrades'][u_type[1]]
-            prev_additive = True
-            additive_func = upgrades['types'][u_type[0]]['func']
+    if debug:
+        for upgrade in combo:
+            u_type=upgrade.split('.')
+            if upgrades['types'][u_type[0]]['method'] == 'additive':
+                additive_value += upgrades['types'][u_type[0]]['upgrades'][u_type[1]]
+                prev_additive = True
+                additive_func = upgrades['types'][u_type[0]]['func']
+                print(f'additive upgrade {u_type[1]}, additive value: {additive_value}, prev_additive: {prev_additive}, final_tick: {final_tick_value}')
 
-        elif upgrades['types'][u_type[0]]['method'] == 'compound':
-            if prev_additive:
-                final_tick_value = additive_func(final_tick_value, additive_value)
-                prev_additive = False
-                additive_value = 0
+            elif upgrades['types'][u_type[0]]['method'] == 'compound':
+                if prev_additive:
+                    final_tick_value=additive_func(final_tick_value, additive_value)
+                    prev_additive = False
+                    additive_value=0
+                    print(f'adding additive upgrade {u_type[1]}, additive value: {additive_value}, prev_additive: {prev_additive}, final_tick: {final_tick_value}')
+                final_tick_value=upgrades['types'][u_type[0]]['func'](final_tick_value, upgrades['types'][u_type[0]]['upgrades'][u_type[1]])
+                print(f'performing compound upgrade {u_type[1]}, additive value: {additive_value}, prev_additive: {prev_additive}, final_tick: {final_tick_value}')
+        if prev_additive:
+            final_tick_value = additive_func(final_tick_value, additive_value)
+            prev_additive = False
+            additive_value = 0
+            print(f'adding additive upgrade {u_type[1]}, additive value: {additive_value}, prev_additive: {prev_additive}, final_tick: {final_tick_value}')
+
+    else:
+        for upgrade in combo:
+            u_type = upgrade.split('.')
+            if upgrades['types'][u_type[0]]['method'] == 'additive':
+                additive_value += upgrades['types'][u_type[0]]['upgrades'][u_type[1]]
+                prev_additive = True
+                additive_func = upgrades['types'][u_type[0]]['func']
+
+            elif upgrades['types'][u_type[0]]['method'] == 'compound':
+                if prev_additive:
+                    final_tick_value = additive_func(final_tick_value, additive_value)
+                    prev_additive = False
+                    additive_value = 0
                 final_tick_value = upgrades['types'][u_type[0]]['func'](final_tick_value,upgrades['types'][u_type[0]]['upgrades'][u_type[1]])
-    if prev_additive:
-        final_tick_value = additive_func(final_tick_value, additive_value)
-        prev_additive = False
-        additive_value = 0
+        if prev_additive:
+            final_tick_value = additive_func(final_tick_value, additive_value)
+            prev_additive = False
+            additive_value = 0
 
     return final_tick_value
 
@@ -129,7 +153,7 @@ for n, combo in enumerate(all_fit):
 data=filter_data(data)
 data=sort_data(data)
 
-print(F'Found {len(data)} valid combinations')
+print(f'Found {len(data)} valid combinations')
 
 sep_data = separate_data(data)
 for x in sep_data:
